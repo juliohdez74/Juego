@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Elemento de audio para música de fondo -->
+    <audio id="background-music" loop>
+        <source src="https://assets.mixkit.co/active_storage/sfx/2748/2748-preview.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="container">
         <header>
             <h1>🎮 MEMORY GAME - TICs 🖥️</h1>
@@ -36,6 +41,7 @@
 
         <div class="controls">
             <button id="reset-btn" class="btn-reset">🔄 Reiniciar Juego</button>
+            <button id="audio-toggle" class="btn-audio" title="Activar/Desactivar música">🔊</button>
         </div>
 
         <div id="message" class="message"></div>
