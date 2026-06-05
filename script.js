@@ -28,7 +28,6 @@ let team2Score = 0;
 let isProcessing = false;
 let gameStarted = false;
 let backgroundMusic = null;
-let soundEffect = null;
 let isMuted = false;
 
 // Elementos del DOM
@@ -41,51 +40,37 @@ const messageElement = document.getElementById('message');
 const resetBtn = document.getElementById('reset-btn');
 const btnTeam1 = document.getElementById('btn-team1');
 const btnTeam2 = document.getElementById('btn-team2');
+const audioToggle = document.getElementById('audio-toggle');
 
 // Inicializar audio
 function initAudio() {
-    // Crear elemento de audio para música de fondo
-    backgroundMusic = document.createElement('audio');
-    backgroundMusic.id = 'background-music';
-    backgroundMusic.loop = true;
-    backgroundMusic.volume = 0.3;
+    backgroundMusic = document.getElementById('background-music');
     
-    // Agregar fuente de audio (Música retro/8-bit)
-    backgroundMusic.innerHTML = `
-        <source src="data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAAA=" type="audio/wav">
-    `;
-    document.body.appendChild(backgroundMusic);
-
-    // Crear elemento para efectos de sonido
-    soundEffect = document.createElement('audio');
-    soundEffect.volume = 0.5;
-    document.body.appendChild(soundEffect);
-
-    // Intentar reproducir música
-    try {
-        backgroundMusic.play().catch(e => {
-            console.log('Música de fondo deshabilitada por el navegador');
-        });
-    } catch (e) {
-        console.log('Error iniciando música:', e);
+    if (backgroundMusic) {
+        backgroundMusic.volume = 0.3;
+        
+        // Evento para reproducir música cuando el usuario interactúa
+        const playMusicOnInteraction = () => {
+            if (gameStarted && !isMuted && backgroundMusic.paused) {
+                backgroundMusic.play().catch(e => {
+                    console.log('No se puede reproducir música:', e);
+                });
+            }
+        };
+        
+        document.addEventListener('click', playMusicOnInteraction);
+        document.addEventListener('touchstart', playMusicOnInteraction);
     }
 
-    // Crear botón de control de audio
-    createAudioControl();
-}
-
-function createAudioControl() {
-    const audioControl = document.createElement('div');
-    audioControl.className = 'audio-control';
-    audioControl.innerHTML = '<button class="btn-audio" id="audio-toggle">🔊</button>';
-    document.body.appendChild(audioControl);
-
-    const audioToggle = document.getElementById('audio-toggle');
-    audioToggle.addEventListener('click', toggleAudio);
+    // Configurar botón de audio
+    if (audioToggle) {
+        audioToggle.addEventListener('click', toggleAudio);
+    }
 }
 
 function toggleAudio() {
-    const audioToggle = document.getElementById('audio-toggle');
+    if (!backgroundMusic) return;
+    
     isMuted = !isMuted;
 
     if (isMuted) {
@@ -156,6 +141,14 @@ function initGame() {
     team2Score = 0;
     isProcessing = false;
     gameStarted = true;
+
+    // Reproducir música de fondo si no está silenciada
+    if (backgroundMusic && !isMuted) {
+        backgroundMusic.currentTime = 0;
+        backgroundMusic.play().catch(e => {
+            console.log('No se puede reproducir música:', e);
+        });
+    }
 
     // Seleccionar 8 palabras aleatorias y duplicarlas
     const shuffled = ticWords.sort(() => 0.5 - Math.random()).slice(0, 8);
@@ -281,6 +274,12 @@ function updateScoreboard() {
 // Finalizar juego
 function endGame() {
     gameStarted = false;
+    
+    // Detener música de fondo cuando termina el juego
+    if (backgroundMusic && !isMuted) {
+        backgroundMusic.pause();
+    }
+    
     let winner = '';
 
     if (team1Score > team2Score) {
